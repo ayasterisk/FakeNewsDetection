@@ -1,9 +1,28 @@
 from flask import Flask, request, render_template
 import tensorflow as tf
-from joblib import load
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from joblib import load
+import joblib
+import numpy as np
+from gensim.models import Word2Vec
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+import re
+
+nltk.download('stopwords')
+nltk.download('wordnet')
+stop_words = set(stopwords.words('english'))
+lemmatizer = WordNetLemmatizer()
+
+def preprocess_text(text):
+    text = re.sub(r'\W', ' ', text)  # Loại bỏ ký tự đặc biệt
+    text = text.lower()  # Chuyển thành chữ thường
+    words = text.split()  # Tách từ
+    words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
+    return words
 
 # Khởi tạo Flask app
 app = Flask(__name__)
@@ -11,17 +30,15 @@ app = Flask(__name__)
 # Load tất cả các model
 models = {
     "embed1_model1": load("models/model_w2v_nb.pkl"),
-    "embed1_model2": load_model("models/model_w2v_lstm.h5"),
-    "embed2_model1": load("models/model_glove_nb.pkl"),
-    "embed2_model2": load_model("models/model_glove_lstm.h5"),
-    "embed3_model1": load("models/model_fasttext_nb.pkl"),
-    "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
-    "embed4_model1": load("models/model_bert_nb.pkl"),
-    "embed4_model2": load_model("models/model_bert_lstm.h5")
+    # "embed1_model2": load_model("models/model_w2v_lstm.h5"),
+    # "embed2_model1": load("models/model_glove_nb.pkl"),
+    # "embed2_model2": load_model("models/model_glove_lstm.h5"),
+    # "embed3_model1": load("models/model_fasttext_nb.pkl"),
+    # "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
+    # "embed4_model1": load("models/model_bert_nb.pkl"),
+    # "embed4_model2": load_model("models/model_bert_lstm.h5")
 }
 
-# Tokenizer giả định (tùy chỉnh lại với dữ liệu thật)
-tokenizer = Tokenizer(num_words=10000)
 
 @app.route("/")
 def index():
@@ -41,14 +58,18 @@ def predict():
 
         if not selected_model:
             return render_template("index.html", error="Lựa chọn không hợp lệ.", news_text=news_text)
-
-        # Tiền xử lý văn bản
-        sequences = tokenizer.texts_to_sequences([news_text])
-        padded = pad_sequences(sequences, maxlen=100)  # maxlen phải phù hợp với mô hình
-
-        # Dự đoán
-        prediction = selected_model.predict(padded)
-        result = "Fake" if prediction[0] < 0.5 else "Real"
+        
+        if embedding_choice == "embed1":
+            def document_vector(doc, word2vec_model):
+                doc = [word for word in doc if word in word2vec_model.wv]
+                return np.mean([word2vec_model.wv[word] for word in doc], axis=0) if doc else np.zeros(100)
+            
+            word2vec_model = Word2Vec.load("models/word2vec_model.bin")
+            processed_text = preprocess_text(news_text)
+            vector = document_vector(processed_text, word2vec_model).reshape(1, -1)
+            prediction = selected_model.predict(vector)
+            
+        result = "Real" if prediction[0] < 0.5 else "Fake"
 
         return render_template(
             "index.html", prediction=result, news_text=news_text, embedding_choice=embedding_choice, model_choice=model_choice

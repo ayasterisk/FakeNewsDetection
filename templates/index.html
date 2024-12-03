@@ -50,15 +50,15 @@
         <textarea name="news_text" placeholder="Nhập văn bản bài báo tại đây...">{{ news_text }}</textarea>
         <label for="embedding_choice">Phương pháp nhúng:</label>
         <select name="embedding_choice">
-            <option value="embed1" {% if embedding_choice == 'embed1' %}selected{% endif %}>Phương pháp nhúng 1</option>
-            <option value="embed2" {% if embedding_choice == 'embed2' %}selected{% endif %}>Phương pháp nhúng 2</option>
-            <option value="embed3" {% if embedding_choice == 'embed3' %}selected{% endif %}>Phương pháp nhúng 3</option>
-            <option value="embed4" {% if embedding_choice == 'embed4' %}selected{% endif %}>Phương pháp nhúng 4</option>
+            <option value="embed1" {% if embedding_choice == 'embed1' %}selected{% endif %}>Phương pháp nhúng Word2Vec</option>
+            <option value="embed2" {% if embedding_choice == 'embed2' %}selected{% endif %}>Phương pháp nhúng GloVe</option>
+            <option value="embed3" {% if embedding_choice == 'embed3' %}selected{% endif %}>Phương pháp nhúng FastText</option>
+            <option value="embed4" {% if embedding_choice == 'embed4' %}selected{% endif %}>Phương pháp nhúng BERT</option>
         </select>
         <label for="model_choice">Phương pháp học máy:</label>
         <select name="model_choice">
-            <option value="model1" {% if model_choice == 'model1' %}selected{% endif %}>Phương pháp học máy 1</option>
-            <option value="model2" {% if model_choice == 'model2' %}selected{% endif %}>Phương pháp học máy 2</option>
+            <option value="model1" {% if model_choice == 'model1' %}selected{% endif %}>Phương pháp học máy Naive Bayes</option>
+            <option value="model2" {% if model_choice == 'model2' %}selected{% endif %}>Phương pháp học sâu LSTM</option>
         </select>
         <button type="submit">Kiểm tra</button>
         <button type="reset">Làm mới</button>
