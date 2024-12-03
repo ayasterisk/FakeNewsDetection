@@ -28,7 +28,7 @@ app = Flask(__name__)
 
 models = {
     "embed1_model1": load("models/model_w2v_nb.pkl"),
-    # "embed1_model2": load_model("models/model_w2v_lstm.h5"),
+    "embed1_model2": load_model("models/model_w2v_lstm.h5"),
     # "embed2_model1": load("models/model_glove_nb.pkl"),
     # "embed2_model2": load_model("models/model_glove_lstm.h5"),
     # "embed3_model1": load("models/model_fasttext_nb.pkl"),
@@ -62,7 +62,13 @@ def predict():
             
             word2vec_model = Word2Vec.load("models/word2vec_model.bin")
             processed_text = preprocess_text(news_text)
-            vector = document_vector(processed_text, word2vec_model).reshape(1, -1)
+            if model_choice == "model1":
+                vector = document_vector(processed_text, word2vec_model).reshape(1, -1)
+            else:
+                text_input = [news_text for _ in range(32)]
+                vector_list = [document_vector(preprocess_text(sentence), word2vec_model) for sentence in text_input]
+                vector_array = np.array(vector_list)
+                vector = np.expand_dims(vector_array, axis=1)
             prediction = selected_model.predict(vector)
             
         result = "Real" if prediction[0] < 0.5 else "Fake"
