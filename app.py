@@ -18,16 +18,14 @@ stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
 
 def preprocess_text(text):
-    text = re.sub(r'\W', ' ', text)  # Loại bỏ ký tự đặc biệt
-    text = text.lower()  # Chuyển thành chữ thường
-    words = text.split()  # Tách từ
+    text = re.sub(r'\W', ' ', text)
+    text = text.lower()
+    words = text.split()
     words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
     return words
 
-# Khởi tạo Flask app
 app = Flask(__name__)
 
-# Load tất cả các model
 models = {
     "embed1_model1": load("models/model_w2v_nb.pkl"),
     # "embed1_model2": load_model("models/model_w2v_lstm.h5"),
@@ -47,12 +45,10 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     if request.method == "POST":
-        # Lấy dữ liệu từ form
         news_text = request.form["news_text"]
         embedding_choice = request.form["embedding_choice"]
         model_choice = request.form["model_choice"]
 
-        # Ghép khóa để chọn đúng model
         model_key = f"{embedding_choice}_{model_choice}"
         selected_model = models.get(model_key)
 
