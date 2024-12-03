@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 import tensorflow as tf
+from joblib import load
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -9,14 +10,14 @@ app = Flask(__name__)
 
 # Load tất cả các model
 models = {
-    "embed1_model1": load_model("models/model1.h5"),
-    "embed1_model2": load_model("models/model5.h5"),
-    "embed2_model1": load_model("models/model2.h5"),
-    "embed2_model2": load_model("models/model6.h5"),
-    "embed3_model1": load_model("models/model3.h5"),
-    "embed3_model2": load_model("models/model7.h5"),
-    "embed4_model1": load_model("models/model4.h5"),
-    "embed4_model2": load_model("models/model8.h5")
+    "embed1_model1": load("models/model_w2v_nb.pkl"),
+    "embed1_model2": load_model("models/model_w2v_lstm.h5"),
+    "embed2_model1": load("models/model_glove_nb.pkl"),
+    "embed2_model2": load_model("models/model_glove_lstm.h5"),
+    "embed3_model1": load("models/model_fasttext_nb.pkl"),
+    "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
+    "embed4_model1": load("models/model_bert_nb.pkl"),
+    "embed4_model2": load_model("models/model_bert_lstm.h5")
 }
 
 # Tokenizer giả định (tùy chỉnh lại với dữ liệu thật)
