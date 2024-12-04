@@ -14,7 +14,7 @@ You can download the dataset here : https://drive.google.com/uc?id=1fli_hyDy7Io0
 
 Step-1 : Clone or download this repository.
 
-Step-2 : In command prompt,go to this project directory.
+Step-2 : In command prompt, go to this project directory.
 
 Step-3 : Run this command. `python app.py`
 
