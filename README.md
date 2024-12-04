@@ -2,7 +2,7 @@
 ## Final Report on NLP : Comparing the Differences Between Embedding Methods with NB Machine Learning and LSTM Deep Learning
 * Introduction :
 
-This is my final report in introductory NLP, this code may have many bad places. I hope everyone sympathizes with me.
+This is my final report in introductory NLP so it may be messy. I hope everyone sympathizes with me.
 
 * Data :
 
