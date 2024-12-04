@@ -29,8 +29,8 @@ app = Flask(__name__)
 models = {
     "embed1_model1": load("models/model_w2v_nb.pkl"),
     "embed1_model2": load_model("models/model_w2v_lstm.h5"),
-    "embed2_model1": load("models/model_glove_nb.pkl"),
-    # "embed2_model2": load_model("models/model_glove_lstm.h5"),
+    "embed2_model1": load("models/model_glove_nb.joblib"),
+    "embed2_model2": load_model("models/model_glove_lstm.h5"),
     # "embed3_model1": load("models/model_fasttext_nb.pkl"),
     # "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
     # "embed4_model1": load("models/model_bert_nb.pkl"),
@@ -71,11 +71,20 @@ def predict():
                 vector = np.expand_dims(vector_array, axis=1)
             prediction = selected_model.predict(vector)
             
-        if embedding_choice == "embed2":    
-            if model_choice == "model1":
-                processed_text = preprocess_text(new_text)
-                sentence_vector = np.mean(embedding_matrix[[word_index[word] for word in processed_text if word in word_index]], axis=0)
-        
+        if embedding_choice == "embed2":
+            loaded_word_index = load("models/word_index.joblib")
+            loaded_embedding_matrix = load("models/embedding_matrix.joblib")
+            processed_text = preprocess_text(news_text)
+            if model_choice == "model1":                             
+                sentence_vector = np.mean(loaded_embedding_matrix[[loaded_word_index[word] for word in processed_text if word in loaded_word_index]], axis=0)
+                vector = sentence_vector.reshape(1, -1)
+                prediction = selected_model.predict(vector)                               
+            if model_choice == "model2":
+                sequence = [[loaded_word_index[word] for word in processed_text if word in loaded_word_index]]
+                padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
+                prediction = selected_model.predict(padded_sequence)
+                prediction = 1 - prediction[0]
+            
         result = "Real" if prediction[0] < 0.5 else "Fake"
 
         return render_template(
