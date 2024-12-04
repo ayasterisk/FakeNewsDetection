@@ -3,9 +3,10 @@
 * Introduction :
 
 This is my final report in introductory NLP, this code may have many bad places. I hope everyone sympathizes with me.
-The dataset used in this project is named news-NLP.csv, it has 7796 rows and 4 columns. The first column identifies the news, the second column is the headline, the third column is the text, the last column is the labels indicating whether the news is real or fake.
 
 * Data :
+
+The dataset used in this project is named news-NLP.csv, it has 7796 rows and 4 columns. The first column identifies the news, the second column is the headline, the third column is the text, the last column is the labels indicating whether the news is real or fake.
 
 You can download the dataset here : https://drive.google.com/uc?id=1fli_hyDy7Io0coUNdk1P-DUPWtpfBwsX
 
