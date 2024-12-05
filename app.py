@@ -55,6 +55,7 @@ def predict():
         if not selected_model:
             return render_template("index.html", error="Lựa chọn không hợp lệ.", news_text=news_text)
         
+        # Word2Vec Embedding
         if embedding_choice == "embed1":
             def document_vector(doc, word2vec_model):
                 doc = [word for word in doc if word in word2vec_model.wv]
@@ -70,7 +71,8 @@ def predict():
                 vector_array = np.array(vector_list)
                 vector = np.expand_dims(vector_array, axis=1)
             prediction = selected_model.predict(vector)
-            
+        
+        # GloVe Embedding    
         if embedding_choice == "embed2":
             loaded_word_index = load("models/word_index.joblib")
             loaded_embedding_matrix = load("models/embedding_matrix.joblib")
