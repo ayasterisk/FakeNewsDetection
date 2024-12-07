@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from joblib import load
 import joblib
 import numpy as np
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, FastText
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -31,7 +31,7 @@ models = {
     "embed1_model2": load_model("models/model_w2v_lstm.h5"),
     "embed2_model1": load("models/model_glove_nb.joblib"),
     "embed2_model2": load_model("models/model_glove_lstm.h5"),
-    # "embed3_model1": load("models/model_fasttext_nb.pkl"),
+    "embed3_model1": load("models/model_fasttext_nb.pkl"),
     # "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
     # "embed4_model1": load("models/model_bert_nb.pkl"),
     # "embed4_model2": load_model("models/model_bert_lstm.h5")
@@ -86,7 +86,25 @@ def predict():
                 padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
                 prediction = selected_model.predict(padded_sequence)
                 prediction = 1 - prediction[0]
-            
+                
+        # fastText Embedding
+        if embedding_choice == "embed3":
+            processed_text = preprocess_text(news_text)
+            def document_vector(doc, model):
+                words = [word for word in doc if word in model.wv.key_to_index]
+                if len(words) == 0:
+                    return np.zeros(model.vector_size)
+                return np.mean(model.wv[words], axis=0)
+
+            if model_choice == "model1":
+                scaler = joblib.load('models/minmax_scaler_fT.pkl')
+                fasttext_model = FastText.load("models/fasttext_model.bin")
+                doc_vec = document_vector(processed_text, fasttext_model).reshape(1, -1)
+                scaled_vec = scaler.transform(doc_vec)
+                prediction = selected_model.predict(scaled_vec)
+            # else:
+                    
+                             
         result = "Real" if prediction[0] < 0.5 else "Fake"
 
         return render_template(
