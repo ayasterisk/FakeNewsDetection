@@ -32,7 +32,7 @@ models = {
     "embed2_model1": load("models/model_glove_nb.joblib"),
     "embed2_model2": load_model("models/model_glove_lstm.h5"),
     "embed3_model1": load("models/model_fasttext_nb.pkl"),
-    # "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
+    "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
     # "embed4_model1": load("models/model_bert_nb.pkl"),
     # "embed4_model2": load_model("models/model_bert_lstm.h5")
 }
@@ -102,8 +102,14 @@ def predict():
                 doc_vec = document_vector(processed_text, fasttext_model).reshape(1, -1)
                 scaled_vec = scaler.transform(doc_vec)
                 prediction = selected_model.predict(scaled_vec)
-            # else:
-                    
+            else:
+                fasttext_model = FastText.load("fasttext_model_lstm.bin")
+                word_index = {word: idx + 1 for idx, word in enumerate(fasttext_model.wv.key_to_index)}
+                def text_to_sequence(text, word_index):
+                    return [word_index[word] for word in text if word in word_index]
+                sequence = text_to_sequence(processed_text, word_index)
+                padded_sequence = pad_sequences([sequence], maxlen=max_seq_len, padding='post')
+                prediction = model.predict(padded_sequence)[0]
                              
         result = "Real" if prediction[0] < 0.5 else "Fake"
 
