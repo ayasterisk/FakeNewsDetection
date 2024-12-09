@@ -81,7 +81,7 @@ def predict():
                 sentence_vector = np.mean(loaded_embedding_matrix[[loaded_word_index[word] for word in processed_text if word in loaded_word_index]], axis=0)
                 vector = sentence_vector.reshape(1, -1)
                 prediction = selected_model.predict(vector)                               
-            if model_choice == "model2":
+            else:
                 sequence = [[loaded_word_index[word] for word in processed_text if word in loaded_word_index]]
                 padded_sequence = pad_sequences(sequence, maxlen=100, padding='post', truncating='post')
                 prediction = selected_model.predict(padded_sequence)
@@ -103,13 +103,13 @@ def predict():
                 scaled_vec = scaler.transform(doc_vec)
                 prediction = selected_model.predict(scaled_vec)
             else:
-                fasttext_model = FastText.load("fasttext_model_lstm.bin")
+                fasttext_model = FastText.load("models/fasttext_model.bin")
                 word_index = {word: idx + 1 for idx, word in enumerate(fasttext_model.wv.key_to_index)}
                 def text_to_sequence(text, word_index):
                     return [word_index[word] for word in text if word in word_index]
                 sequence = text_to_sequence(processed_text, word_index)
-                padded_sequence = pad_sequences([sequence], maxlen=max_seq_len, padding='post')
-                prediction = model.predict(padded_sequence)[0]
+                padded_sequence = pad_sequences([sequence], maxlen=200, padding='post')
+                prediction = selected_model.predict(padded_sequence)[0]
                              
         result = "Real" if prediction[0] < 0.5 else "Fake"
 
