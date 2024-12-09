@@ -7,70 +7,155 @@
     <link rel="stylesheet" href="/static/styles.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        main {
+            width: 90%;
+            max-width: 600px;
             padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        form {
-            margin: 20px auto;
-            width: 50%;
-        }
-        
-        textarea, select {
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+
+        header {
             background-color: #007bff;
             color: white;
-            border: none;
-            cursor: pointer;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
         }
-        
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .topic-image {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .topic-image img {
+            max-width: 100px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 10px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            transition: background-color 0.3s ease;
+        }
+
         button:hover {
             background-color: #0056b3;
         }
-        
-        .result {
+
+        .result, .accuracy {
             margin-top: 20px;
-            font-size: 20px;
+            font-size: 18px;
+            text-align: center;
             font-weight: bold;
+        }
+
+        .result {
+            color: #2B5F87;
+        }
+
+        .accuracy {
+            color: #6c757d;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
-    <h1>Fake News Detector</h1>
-    <div class="topic-image">
-        <img src="https://hoitinhoc.binhdinh.gov.vn/wp-content/uploads/2019/04/image001-300x300.png" alt="Fake News Detection">
-    </div>
-    <form method="POST" action="/predict">
-        <textarea name="news_text" placeholder="Nhập văn bản bài báo tại đây...">{{ news_text }}</textarea>
-        <label for="embedding_choice">Phương pháp nhúng:</label>
-        <select name="embedding_choice">
-            <option value="embed1" {% if embedding_choice == 'embed1' %}selected{% endif %}>Phương pháp nhúng Word2Vec</option>
-            <option value="embed2" {% if embedding_choice == 'embed2' %}selected{% endif %}>Phương pháp nhúng GloVe</option>
-            <option value="embed3" {% if embedding_choice == 'embed3' %}selected{% endif %}>Phương pháp nhúng FastText</option>
-            <option value="embed4" {% if embedding_choice == 'embed4' %}selected{% endif %}>Phương pháp nhúng BERT</option>
-        </select>
-        <label for="model_choice">Phương pháp học máy:</label>
-        <select name="model_choice">
-            <option value="model1" {% if model_choice == 'model1' %}selected{% endif %}>Phương pháp học máy Naive Bayes</option>
-            <option value="model2" {% if model_choice == 'model2' %}selected{% endif %}>Phương pháp học sâu LSTM</option>
-        </select>
-        <button type="submit">Kiểm tra</button>
-        <button type="reset">Làm mới</button>
-    </form>
-    {% if prediction %}
-    <div class="result">Kết quả: {{ prediction }}</div>
-    {% endif %}
-    {% if error %}
-    <div class="result" style="color: red;">{{ error }}</div>
-    {% endif %}
+    <main>
+        <header>
+            <h1>Fake News Detector</h1>
+        </header>
+        <div class="topic-image">
+            <img src="https://hoitinhoc.binhdinh.gov.vn/wp-content/uploads/2019/04/image001-300x300.png" alt="Fake News Detection">
+        </div>
+        <form method="POST" action="/predict">
+            <textarea name="news_text" placeholder="Nhập văn bản bài báo tại đây...">{{ news_text }}</textarea>
+            <label for="embedding_choice">Phương pháp nhúng:</label>
+            <select name="embedding_choice">
+                <option value="embed1" {% if embedding_choice == 'embed1' %}selected{% endif %}>Phương pháp nhúng Word2Vec</option>
+                <option value="embed2" {% if embedding_choice == 'embed2' %}selected{% endif %}>Phương pháp nhúng GloVe</option>
+                <option value="embed3" {% if embedding_choice == 'embed3' %}selected{% endif %}>Phương pháp nhúng FastText</option>
+                <option value="embed4" {% if embedding_choice == 'embed4' %}selected{% endif %}>Phương pháp nhúng BERT</option>
+            </select>
+            <label for="model_choice">Phương pháp học máy:</label>
+            <select name="model_choice">
+                <option value="model1" {% if model_choice == 'model1' %}selected{% endif %}>Phương pháp học máy Naive Bayes</option>
+                <option value="model2" {% if model_choice == 'model2' %}selected{% endif %}>Phương pháp học sâu LSTM</option>
+            </select>
+            <button type="submit">Kiểm tra</button>
+            <button type="reset">Làm mới</button>
+        </form>
+        {% if prediction %}
+        <div class="result">Kết quả: {{ prediction }}</div>
+        {% endif %}
+        {% if accuracy %}
+        <div class="accuracy">Độ chính xác của mô hình: {{ accuracy }}%</div>
+        {% endif %}
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </main>
 </body>
 </html>
