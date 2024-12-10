@@ -116,6 +116,15 @@ def predict():
                 prediction = selected_model.predict(padded_sequence)[0]
                 accuracy = 84.61
                 
+        # BERT embedding
+        if embedding_choice == "embed4":
+            def preprocess_text_bert(text):
+                text = re.sub(r'\W', ' ', text)
+                text = text.lower()
+                words = text.split()
+                words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
+                return ' '.join(words)
+            processed_text = preprocess_text_bert(news_text)
                              
         result = "Real" if prediction[0] < 0.5 else "Fake"
 
