@@ -3,14 +3,19 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from models import LSTMModel
+import torch
+from torch import nn
 from joblib import load
 import joblib
 import numpy as np
 from gensim.models import Word2Vec, FastText
 import nltk
+from transformers import BertModel, BertTokenizer
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import re
+
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -33,8 +38,8 @@ models = {
     "embed2_model2": load_model("models/model_glove_lstm.h5"),
     "embed3_model1": load("models/model_fasttext_nb.pkl"),
     "embed3_model2": load_model("models/model_fasttext_lstm.h5"),
-    # "embed4_model1": load("models/model_bert_nb.pkl"),
-    # "embed4_model2": load_model("models/model_bert_lstm.h5")
+    "embed4_model1": load("models/model_bert_nb.joblib"),
+    "embed4_model2": load("models/model_bert_lstm.joblib")
 }
 
 
@@ -72,6 +77,7 @@ def predict():
                 vector = np.expand_dims(vector_array, axis=1)
                 accuracy = 90.61
             prediction = selected_model.predict(vector)
+            result = "Real" if prediction[0] < 0.5 else "Fake"
         
         # GloVe Embedding    
         if embedding_choice == "embed2":
@@ -89,6 +95,7 @@ def predict():
                 prediction = selected_model.predict(padded_sequence)
                 prediction = 1 - prediction[0]
                 accuracy = 86.42
+            result = "Real" if prediction[0] < 0.5 else "Fake"
                 
         # fastText Embedding
         if embedding_choice == "embed3":
@@ -115,18 +122,47 @@ def predict():
                 padded_sequence = pad_sequences([sequence], maxlen=200, padding='post')
                 prediction = selected_model.predict(padded_sequence)[0]
                 accuracy = 84.61
+            result = "Real" if prediction[0] < 0.5 else "Fake"
                 
         # BERT embedding
         if embedding_choice == "embed4":
-            def preprocess_text_bert(text):
-                text = re.sub(r'\W', ' ', text)
-                text = text.lower()
-                words = text.split()
-                words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
-                return ' '.join(words)
-            processed_text = preprocess_text_bert(news_text)
-                             
-        result = "Real" if prediction[0] < 0.5 else "Fake"
+            tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+            bert_model = BertModel.from_pretrained('bert-base-uncased')
+            if model_choice == "model1":
+                def get_bert_embeddings_batch(text_list, tokenizer, bert_model, batch_size=32):
+                    embeddings = []
+                    for i in range(0, len(text_list), batch_size):
+                        batch_texts = text_list[i:i + batch_size]
+                        inputs = tokenizer(batch_texts, padding=True, truncation=True, return_tensors="pt", max_length=512)
+                        with torch.no_grad():
+                            outputs = bert_model(**inputs)
+                        cls_embeddings = outputs.last_hidden_state[:, 0, :].numpy()
+                        embeddings.append(cls_embeddings)
+                    embeddings = np.vstack(embeddings)
+                    return embeddings
+                input_embedding = get_bert_embeddings_batch([news_text], tokenizer, bert_model, batch_size=1)
+                prediction = selected_model.predict(input_embedding)
+                accuracy = 82.32
+                result = "Real" if prediction[0] < 0.5 else "Fake"
+            else:
+                accuracy = 89.66
+                device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                selected_model.to(device)
+                def get_bert_embeddings_lstm(text, tokenizer, bert_model):
+                    inputs = tokenizer(text, padding=True, truncation=True, return_tensors="pt", max_length=512)
+                    with torch.no_grad():
+                        outputs = bert_model(**inputs)
+                    cls_embeddings = outputs.last_hidden_state[:, 0, :].numpy()
+                    return cls_embeddings
+                embeddings = get_bert_embeddings_lstm(news_text, tokenizer, bert_model)
+                embeddings_tensor = torch.tensor(embeddings, dtype=torch.float32)
+                embeddings_tensor = embeddings_tensor.to(device)
+                embeddings_tensor = embeddings_tensor.unsqueeze(1)
+                with torch.no_grad():
+                    output = selected_model(embeddings_tensor)
+                    _, predicted = torch.max(output, 1)
+                result = "Fake" if predicted.item() == 1 else "Real"
+
 
         return render_template(
             "index.html", accuracy=accuracy, prediction=result, news_text=news_text, embedding_choice=embedding_choice, model_choice=model_choice
